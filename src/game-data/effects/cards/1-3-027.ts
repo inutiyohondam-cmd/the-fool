@@ -64,11 +64,12 @@ export const effects: CardEffects = {
       '破壊するユニットを選択して下さい'
     );
 
-    if (opponentTarget) Effect.break(stack, stack.processing, opponentTarget, 'effect');
     if (undeadTarget) Effect.break(stack, stack.processing, undeadTarget, 'effect');
+    if (opponentTarget) Effect.break(stack, stack.processing, opponentTarget, 'effect');
   },
 
   onOverclockSelf: async (stack: StackWithCard) => {
+    if (stack.processing.owner.trash.length <= 0) return;
     await System.show(stack, 'カオスディール', '捨札から選んで回収');
     await EffectTemplate.revive(stack, 1);
   },

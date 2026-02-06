@@ -12,7 +12,7 @@ import * as battle from './operations/battle';
 import * as gameFlow from './operations/game-flow';
 import * as messageHandler from './operations/message-handler';
 
-interface History {
+export interface History {
   card: Card;
   generation: number;
   action: 'drive' | 'boot' | 'joker';
@@ -141,5 +141,21 @@ export class Core {
   // Message handler
   async handleMessage(message: Message) {
     return messageHandler.handleMessage(this, message);
+  }
+
+  /**
+   * リソースを解放する
+   * 全プレイヤー切断時に呼び出される
+   */
+  dispose(): void {
+    // 効果応答ハンドラをクリア
+    this.effectResponses.clear();
+
+    // スタックと履歴をクリア
+    this.stack = [];
+    this.histories = [];
+
+    // プレイヤー参照をクリア
+    this.players = [];
   }
 }

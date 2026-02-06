@@ -16,9 +16,13 @@ import {
   helperChoice,
   helperIsUnit,
   helperIsEvolve,
+  helperCombine,
+  helperCombo,
   type UnitPickFilter,
   type Choice,
+  type ComboCheckCondition,
 } from './helper/index';
+import type { Effect } from './helper/combine';
 
 export type { UnitPickFilter, Choice };
 
@@ -244,6 +248,31 @@ export class EffectHelper {
   }
 
   /**
+   * 複数の効果を同時に発動させる
+   *
+   * effectsに発動させたい効果とその条件について与えて呼び出すことで、実際に発動する効果のみを System.show() 付きで呼び出します。
+   * 効果は `order` プロパティで実行順序を制御できます（低い値が先に実行、デフォルト: 0）。
+   *
+   * @param stack - スタック
+   * @param effects - 効果情報
+   * @param effects[].title - 効果のタイトル
+   * @param effects[].description - 効果の説明
+   * @param effects[].condition - 効果の発動条件（省略時は常に発動）
+   * @param effects[].effect - 実行する効果関数
+   * @param effects[].order - 実行順序（低い値が先、省略時は0）
+   * @returns なし
+   *
+   * @example
+   * await EffectHelper.combine(stack, [
+   *   { title: 'ハートスティール', description: 'CP-12', effect: () => stealCP(stack, self, owner), order: 2 },
+   *   { title: '連撃', description: '基本BP-2000', effect: async () => { ... }, order: 1 },
+   * ])
+   */
+  static async combine(stack: Stack, effects: Effect[]): Promise<void> {
+    return helperCombine(stack, effects);
+  }
+
+  /**
    * 与えられた値がUnitインスタンスかを判定する
    *
    * @param card - 判定対象
@@ -272,5 +301,23 @@ export class EffectHelper {
    */
   static isEvolve(card: unknown): card is Evolve {
     return helperIsEvolve(card);
+  }
+
+  /**
+   * 「連撃」などの履歴参照系の効果を発動可能であるかチェックします
+   *
+   *  連撃の実装は GREEN_COMBO 関数を利用して、ComboCheckCondition を利用すると簡単にチェックできます
+   *
+   * @param core
+   * @param condition 条件オブジェクト
+   * @returns boolean
+   * @example
+   * // コスト2以上の連撃の場合
+   * if( EffectHelper.combo(stack.core, GREEN_COMBO(2)) ) {
+   *  // 効果処理
+   * }
+   */
+  static combo(core: Core, self: Unit, condition: ComboCheckCondition) {
+    return helperCombo(core, self, condition);
   }
 }
